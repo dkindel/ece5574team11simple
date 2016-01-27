@@ -14,35 +14,55 @@ JINJA_ENV = jinja2.Environment(
 class Counter(ndb.Model):
     count = ndb.IntegerProperty(indexed=False)
 
-class CounterHandler(webapp2.RequestHandler):
+class StartHandler(webapp2.RequestHandler):
     def get(self):
         template_values = {'counters': Counter.query()}
-        counter_template = JINJA_ENV.get_template('counter.html')
-        self.response.out.write(counter_template.render(template_values))
+        start_template = JINJA_ENV.get_template('start.html')
+        self.response.out.write(start_template.render(template_values))
 
+class StartHandler(webapp2.RequestHandler):
     def post(self):
-        key = self.request.get('key')
+	counter = Counter.get()
+        counter.count = 0
+        counter.put()
+        
+        taskqueue.add(url='/end')
 
+        self.redirect('/started')
+
+
+class CounterHandler(webapp2.RequestHandler):
+    def get(self):
+        counter_template = JINJA_ENV.get_template('counter.html')
+        self.response.out.write(counter_template.render())
+
+
+class AddHandler(webapp2.RequestHandler):
+    def post(self):
         # Add the task to the default queue.
-        taskqueue.add(url='/worker', params={'key': key})
-
-        self.redirect('/')
+        taskqueue.add(url='/worker', countdown=5)
 
 class CounterWorker(webapp2.RequestHandler):
-    def post(self): # should run at most 1/s due to entity group limit
-        key = self.request.get('key')
+    def post(self):
         @ndb.transactional
         def update_counter():
-	    counter = Counter.get_or_insert(key, count=0)
-            counter.count += 10
+	    counter = Counter.get()
+            counter.count += 1
             counter.put()
 
 	update_counter()
 
+class EndHandler(webapp2.RequestHandler):
+    def post(self):
+        self.redirect('/')
 
 
 APP = webapp2.WSGIApplication(
     [
-        ('/', CounterHandler),
-        ('/worker', CounterWorker)
+        ('/', StartPage),
+        ('/start', StartHandler),
+        ('/started', CounterPage),
+        ('/add', AddHandler),
+        ('/worker', CounterWorker),
+        ('/end', EndHandler)
     ], debug=True)
