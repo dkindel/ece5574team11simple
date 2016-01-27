@@ -22,7 +22,7 @@ Run the code:
 * cd into the Source subdirectory of the folder you just created.
 * Run the command 'dev_appserver.py .'
 
-The app should start running and can be accessed via the webpage at [localhost:8080/].
+The app should start running and can be accessed via the webpage at localhost:8080/
 
 ## Using this app
 
