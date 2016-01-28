@@ -11,23 +11,23 @@ JINJA_ENV = jinja2.Environment(
     loader=jinja2.FileSystemLoader(os.path.dirname(__file__)))
 
 
+
 class Counter(ndb.Model):
     count = ndb.IntegerProperty(indexed=False)
 
-class StartHandler(webapp2.RequestHandler):
+class StartPage(webapp2.RequestHandler):
     def get(self):
+        #counter = 0
         template_values = {'counters': Counter.query()}
         start_template = JINJA_ENV.get_template('start.html')
         self.response.out.write(start_template.render(template_values))
 
 class StartHandler(webapp2.RequestHandler):
     def post(self):
-	counter = Counter.get()
+	counter = Counter.get_or_insert("counter", count = 0)
         counter.count = 0
         counter.put()
         
-        taskqueue.add(url='/end')
-
         self.redirect('/started')
 
 
@@ -40,29 +40,38 @@ class CounterHandler(webapp2.RequestHandler):
 class AddHandler(webapp2.RequestHandler):
     def post(self):
         # Add the task to the default queue.
-        taskqueue.add(url='/worker', countdown=5)
+        taskqueue.add(queue_name='countAdder', url='/worker')
+        self.redirect("/started")
 
 class CounterWorker(webapp2.RequestHandler):
     def post(self):
         @ndb.transactional
         def update_counter():
-	    counter = Counter.get()
+	    counter = Counter.get_or_insert("counter", count = 0)
             counter.count += 1
             counter.put()
-
 	update_counter()
 
 class EndHandler(webapp2.RequestHandler):
     def post(self):
-        self.redirect('/')
+	counter = Counter.get_or_insert("counter", count = 0)
+        print counter.count
+        self.response.out.write("")
+        template_values = {'counters': Counter.query()}
+        end_template = JINJA_ENV.get_template('end.html')
+        self.response.out.write(end_template.render(template_values))
 
+class ExitHandler(webapp2.RequestHandler):
+    def post(self):
+        self.redirect("/")
 
 APP = webapp2.WSGIApplication(
     [
         ('/', StartPage),
         ('/start', StartHandler),
-        ('/started', CounterPage),
+        ('/started', CounterHandler),
         ('/add', AddHandler),
         ('/worker', CounterWorker),
-        ('/end', EndHandler)
+        ('/end', EndHandler),
+        ('/exit', ExitHandler)
     ], debug=True)

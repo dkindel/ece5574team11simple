@@ -1,8 +1,23 @@
 <!DOCTYPE html>
 <html>
-<body>
-<form action="/add" method="POST">
-  <input type="submit" value="Click it!">
-</form>
-</body>
+	<head>
+		<title>Counter Game</title>
+		<link rel="stylesheet" type="text/css" href="style.css">
+		<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+	</head>
+	<body>
+	<form action="/add" method="POST">
+	  <input type="submit" value="Click it!">
+    </form> 
+    <form name="myform" action="/end" method="POST"/>
+
+    <body onload="setTimeout(submitform, 5000);"/>
+                        
+    <script type="text/javascript">
+        function submitform()
+        {
+            document.myform.submit();
+        }
+    </script>
+	</body>
 </html>
