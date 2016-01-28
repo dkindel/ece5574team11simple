@@ -1,0 +1,9 @@
+queue:
+- name: default
+  rate: 1/s
+
+- name: countAdder
+  rate: 20/s
+
+- name: endTimer
+  rate: 1/s
