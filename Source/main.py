@@ -18,13 +18,16 @@ class Counter(ndb.Model):
 class StartPage(webapp2.RequestHandler):
     def get(self):
         #counter = 0
-        template_values = {'counters': Counter.query()}
+        query = Counter.query()
+	counter = Counter.get_or_insert("key", count = 0)
+        count_value = counter.count if Counter else 0
+        template_values = {'counter': counter.count}
         start_template = JINJA_ENV.get_template('start.html')
         self.response.out.write(start_template.render(template_values))
 
 class StartHandler(webapp2.RequestHandler):
     def post(self):
-	counter = Counter.get_or_insert("counter", count = 0)
+	counter = Counter.get_or_insert("key", count = 0)
         counter.count = 0
         counter.put()
         
@@ -47,17 +50,19 @@ class CounterWorker(webapp2.RequestHandler):
     def post(self):
         @ndb.transactional
         def update_counter():
-	    counter = Counter.get_or_insert("counter", count = 0)
+	    counter = Counter.get_or_insert("key", count = 0)
             counter.count += 1
             counter.put()
 	update_counter()
 
 class EndHandler(webapp2.RequestHandler):
     def post(self):
-	counter = Counter.get_or_insert("counter", count = 0)
+	counter = Counter.get_or_insert("key", count = 0)
         print counter.count
         self.response.out.write("")
-        template_values = {'counters': Counter.query()}
+        query = Counter.query()
+	counter = Counter.get_or_insert("key", count = 0)
+        template_values = {'counter': counter.count}
         end_template = JINJA_ENV.get_template('end.html')
         self.response.out.write(end_template.render(template_values))
 
