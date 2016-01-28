@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<style>
+		body {
+				font-family: 'Georgia', serif; 
+				background-color: #FBFBFB;
+				margin: auto;
+				width: 60%;
+				border: 3px solid #73AD21;
+				padding: 10px;
+				text-align: center;
+			}
+	</style>
+	<title>Game</title>
+</head>
+<body>
+	<p>Hit start and then click the button as many times as you can in 5 seconds!</p>
+	<form action="/start" method="POST">
+		<input type="submit" style="width:200px;height:40px;" value="Start">
+	</form>
+	<p>Last game, you clicked {{counter}}</p>
+</body>
+</html>
